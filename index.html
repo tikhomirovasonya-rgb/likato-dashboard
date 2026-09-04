@@ -211,6 +211,20 @@ footer {
 .legend-mini { display: inline-flex; gap: 14px; font-size: 12px; margin-top: 8px; flex-wrap: wrap; }
 .legend-mini span { display: flex; align-items: center; gap: 6px; color: #4b5563; }
 .legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+/* ---- IM tab: sticky first columns (SKU/Бренд/ШК) + highlight ---- */
+#tab-im .imtbl{border-collapse:separate;border-spacing:0;}
+#tab-im .imtbl th:nth-child(-n+3),#tab-im .imtbl td:nth-child(-n+3){position:sticky;background:#fff;z-index:2;}
+#tab-im .imtbl th:nth-child(1),#tab-im .imtbl td:nth-child(1){left:0;min-width:240px;max-width:240px;white-space:normal;}
+#tab-im .imtbl th:nth-child(2),#tab-im .imtbl td:nth-child(2){left:240px;min-width:78px;max-width:78px;}
+#tab-im .imtbl th:nth-child(3),#tab-im .imtbl td:nth-child(3){left:318px;min-width:112px;max-width:112px;border-right:2px solid #cbd5e1;}
+#tab-im .imtbl thead th{position:sticky;top:0;z-index:3;}
+#tab-im .imtbl thead th:nth-child(-n+3){z-index:4;background:#1F3864;}
+#tab-im .imtbl tr.imtot td{background:#eef2fb;font-weight:700;border-bottom:2px solid #1F3864;}
+#tab-im .imtbl tr.imtot td:nth-child(-n+3){background:#eef2fb;}
+#tab-im .imtbl tr.imhl td{background:#FFF3CD;}
+#tab-im .imtbl tr.imhl td:nth-child(-n+3){background:#FFF3CD;}
+#tab-im .imtbl tr.imhl td:nth-child(1){box-shadow:inset 4px 0 0 #f59e0b;}
 </style>
 <meta property="og:title" content="Likato — дашборд продаж" data-id="th-modified" ><meta name="description" content="Likato_dashboard" data-id="th-modified" ><meta property="og:description" content="Likato_dashboard" data-id="th-modified" ><meta property="og:image" content="" data-id="th-modified" ><meta property="og:image:width" content="1501" data-id="th-modified" ><meta property="og:image:height" content="1501" data-id="th-modified" ><meta property="og:image:type" content="image/png" data-id="th-modified" ><meta property="og:url" content="https://tikhomirovasonya-rgb.github.io/likato-dashboard/" data-id="th-modified" ><meta property="og:type" content="website" data-id="th-modified" ></head>
 <body>
@@ -227,7 +241,6 @@ footer {
 <!-- Tabs -->
 <div class="tabs">
   <button class="tab active" data-tab="overview">Обзор</button>
-  <button class="tab" data-tab="dynamics">Динамика</button>
   <button class="tab" data-tab="skus">SKU</button>
   <button class="tab" data-tab="heatmap">SKU × ТТ</button>
   <button class="tab" data-tab="stores">Магазины</button>
@@ -242,10 +255,7 @@ footer {
 
 <!-- TAB: OVERVIEW -->
 <div class="tab-pane" id="tab-overview">
-  <div class="card" style="margin-bottom:16px">
-    <h2 class="card-title">Сводная по каналу Золотое Яблоко <span class="badge">2026 · все бренды · РФ + РБ</span></h2>
-    <div class="kpi-grid" id="ovChKpis"></div>
-  </div>
+  <div class="kpi-grid" id="ovChKpis" style="display:none"></div>
   <div class="grid-2">
     <div class="card"><h2 class="card-title">Динамика по неделям <span class="badge">шт / неделю · все бренды · РФ+РБ</span></h2><div class="chart-wrap"><canvas id="ovWeek"></canvas></div></div>
     <div class="card"><h2 class="card-title">Динамика по категориям <span class="badge">по неделям · все бренды</span></h2><div class="chart-wrap"><canvas id="ovCatW"></canvas></div></div>
@@ -255,56 +265,6 @@ footer {
     <div class="card"><h2 class="card-title">Топ-15 магазинов <span class="badge">все бренды · РФ+РБ · 2026</span></h2><div id="ovTopStore" style="overflow-x:auto"></div></div>
   </div>
   <div style="display:none"><canvas id="chartTotal"></canvas><canvas id="chartCat"></canvas><canvas id="chartReco"></canvas><div id="topSku"></div><div id="topStores"></div></div>
-</div>
-
-<!-- TAB: DYNAMICS -->
-<div class="tab-pane hide" id="tab-dynamics">
-  <div class="card">
-    <h2 class="card-title">Понедельная динамика</h2>
-    <div class="filters">
-      <label>Категория:</label>
-      <select id="dynCat">
-        <option value="all">Все категории</option>
-      </select>
-      <label>Магазин:</label>
-      <select id="dynStore">
-        <option value="all">Вся сеть</option>
-      </select>
-      <label>Канал:</label>
-      <select id="dynChannel">
-        <option value="all">Оба</option>
-        <option value="Онлайн">Онлайн</option>
-        <option value="Офлайн">Офлайн (все ТТ)</option>
-      </select>
-    </div>
-    <div class="chart-wrap tall"><canvas id="chartDyn"></canvas></div>
-    <div class="legend-mini" id="dynLegend"></div>
-  </div>
-  <div class="card">
-    <h2 class="card-title">Динамика выбранных SKU <span class="badge" id="dynSkuCount">0</span></h2>
-    <div class="filters">
-      <label>Поиск SKU:</label>
-      <input type="text" id="skuSearch" placeholder="название…" >
-      <label>Категория:</label>
-      <select id="skuDynCat"><option value="all">Все</option></select>
-      <label>Только:</label>
-      <select id="skuDynReco">
-        <option value="all">Все статусы</option>
-        <option value="Поддерживать (драйвер)">Драйверы</option>
-        <option value="Расширить дистрибуцию">Расширить</option>
-        <option value="Новинка">Новинки</option>
-        <option value="Вывести / ротация">К выводу</option>
-        <option value="Вывести (мертвый)">Мертвые</option>
-      </select>
-      <label>Топ:</label>
-      <select id="skuDynLimit">
-        <option value="10">10</option>
-        <option value="20" selected>20</option>
-        <option value="50">50</option>
-      </select>
-    </div>
-    <div class="chart-wrap tall"><canvas id="chartSkuDyn"></canvas></div>
-  </div>
 </div>
 
 <!-- TAB: SKUs -->
@@ -510,6 +470,7 @@ footer {
       <div style="margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         <label>Бренд:</label><select id="imBrand"></select>
         <label>Показатель:</label><select id="imMetric"><option value="qty">Штуки</option><option value="zc">₽ в ценах закупки</option></select>
+        <label>Подсветка:</label><select id="imHL"><option value="all">Все</option><option value="hl">Только выделенные</option></select>
         <label>Поиск:</label><input id="imSearch" placeholder="SKU..." style="padding:6px 10px;border:1px solid #cbd5e1;border-radius:6px">
       </div>
     </div>
@@ -675,16 +636,11 @@ function init() {
   ['monSearch','monSort'].forEach(function(id){document.getElementById(id).addEventListener('input', renderMonthly);});
 
   // Listeners
-  ['dynCat','dynStore','dynChannel'].forEach(id => document.getElementById(id).addEventListener('change', drawDyn));
-  ['skuSearch','skuDynCat','skuDynReco','skuDynLimit'].forEach(id => document.getElementById(id).addEventListener('input', drawSkuDyn));
   ['skuSearchT','skuCatT','skuRecoT','skuSortT'].forEach(id => document.getElementById(id).addEventListener('input', renderTblSku));
   ['hmCat','hmReco','hmTop'].forEach(id => document.getElementById(id).addEventListener('change', renderHeatmap));
   ['storeSort','storeType'].forEach(id => document.getElementById(id).addEventListener('change', renderTblStore));
   document.getElementById('storePick').addEventListener('change', renderStoreCard);
   document.getElementById('planStorePick').addEventListener('change', renderPlanStoreActions);
-  // dyn chart starts
-  drawDyn();
-  drawSkuDyn();
 }
 
 function onTabSwitch(tab){
@@ -1313,31 +1269,43 @@ function renderPlanStoreActions(){
   // ---------- HEADER KPIs (весь канал, 2026) ----------
   function chHeaderKpis(){
     const A=C.series.ALL;
-    const q26=sum(sl26(A.total.qty)), rf=sum(sl26(A.total.rev_fact)), rz=sum(sl26(A.total.rev_zc));
-    const qby=sum(sl26((A.country['Беларусь']||{qty:M.map(_=>0)}).qty));
+    const Z=()=>M.map(_=>0);
+    const q26=sum(sl26(A.total.qty)), rf=sum(sl26(A.total.rev_fact));
+    const online=sum(sl26((A.channel['Онлайн']||{qty:Z()}).qty));
+    const offline=sum(sl26((A.channel['Офлайн']||{qty:Z()}).qty));
+    const qLik=sum(sl26((C.series['Likato Professional']||C.series.ALL).total.qty));
+    const qEp=sum(sl26((C.series['EpilProfi']||{total:{qty:Z()}}).total.qty));
+    const qLav=sum(sl26((C.series['LAVANT']||{total:{qty:Z()}}).total.qty));
     const jj=(y)=>M.map((m,i)=>(m>=y+'-01'&&m<=y+'-07')?i:-1).filter(i=>i>=0);
     const y26=sum(jj('2026').map(i=>A.total.qty[i])), y25=sum(jj('2025').map(i=>A.total.qty[i]));
     const yoy=y25?((y26/y25-1)*100):0;
-    const nRF=ST.stores.filter(s=>s.country==='Россия').length, nRB=ST.stores.filter(s=>s.country==='Беларусь').length;
+    const z26=sum(jj('2026').map(i=>A.total.rev_fact[i])), z25=sum(jj('2025').map(i=>A.total.rev_fact[i]));
+    const yoyZ=z25?((z26/z25-1)*100):0;
     const el=document.getElementById('kpis'); if(!el)return;
     el.innerHTML=
-      kcard('Продано в канале',fmt(q26)+' шт','2026 · все бренды · РФ+РБ')+
-      kcard('Выручка факт',fmt(Math.round(rf))+' ₽','в ценах закупки','green')+
-      kcard('₽ ЗЦ 2026',fmt(Math.round(rz))+' ₽','шт × ЗЦ','green')+
-      kcard('YoY YTD',(yoy>=0?'+':'')+yoy.toFixed(0)+'%','2026 к 2025 (янв–июл)',yoy>=0?'green':'red')+
-      kcard('Брендов',C.brands.length,'Likato · LAVANT · EpilProfi')+
-      kcard('Магазинов',ST.stores.length,'РФ '+nRF+' + РБ '+nRB)+
-      kcard('Беларусь',fmt(qby)+' шт',(q26?((qby/q26*100).toFixed(0)+'% канала'):''));
+      kcard('Продажи, шт',fmt(q26)+' шт','2026 · все бренды · РФ+РБ')+
+      kcard('Продажи в ЗЦ',fmt(Math.round(rf))+' ₽','в ценах закупки (факт)','green')+
+      kcard('Прирост к 2025, шт',(yoy>=0?'+':'')+yoy.toFixed(0)+'%','YTD янв–июл',yoy>=0?'green':'red')+
+      kcard('Прирост к 2025, ЗЦ',(yoyZ>=0?'+':'')+yoyZ.toFixed(0)+'%','YTD янв–июл (выручка факт)',yoyZ>=0?'green':'red')+
+      kcard('Продажи ИМ',fmt(online)+' шт',(q26?('интернет-магазин · '+(online/q26*100).toFixed(0)+'%'):'интернет-магазин'))+
+      kcard('Продажи оффлайн',fmt(offline)+' шт',(q26?('офлайн-ТТ · '+(offline/q26*100).toFixed(0)+'%'):'офлайн-ТТ'))+
+      kcard('Likato, шт',fmt(qLik)+' шт','бренд')+
+      kcard('EpilProfi, шт',fmt(qEp)+' шт','бренд')+
+      kcard('LAVANT, шт',fmt(qLav)+' шт','бренд');
   }
 
   // ---------- IM: интернет-магазин РФ (SKU × недели/месяцы, шт или ₽ЗЦ) ----------
+  const IM_HLSET=new Set(["4640204560205","4640204563336","4640204563572","4640204565392","4640204563589","4640204563770","4603789550245","4640204563046","4640204565521","4603784469504","4640204563466","4640204566740","4640204564333","4640204565651","4640204565125","4640204566290","4640204567303"]);
+  const imIsHL=s=>IM_HLSET.has(String(s.barcode||''));
+  const imFirstNZ=arr=>{for(let i=0;i<arr.length;i++){if(arr[i])return i;}return -1;};
   function imRender(){
     if(!C.im)return;
     const IM=C.im;
     const bf=document.getElementById('imBrand').value||'ALL';
     const met=document.getElementById('imMetric').value||'qty';
+    const hlf=(document.getElementById('imHL')||{}).value||'all';
     const q=(document.getElementById('imSearch').value||'').trim().toLowerCase();
-    let rows=IM.skus.filter(s=>(bf==='ALL'||s.brand===bf)&&(q===''||s.name.toLowerCase().includes(q)||(s.barcode||'').includes(q)));
+    let rows=IM.skus.filter(s=>(bf==='ALL'||s.brand===bf)&&(hlf!=='hl'||imIsHL(s))&&(q===''||s.name.toLowerCase().includes(q)||(s.barcode||'').includes(q)));
     const val=(v,zc)=> met==='qty'? v : Math.round(v*zc);
     // сортировка по итогу текущего показателя (по месяцам)
     rows=rows.map(s=>Object.assign({},s,{_t:met==='qty'?s.mo.reduce((a,b)=>a+b,0):s.mo.reduce((a,b)=>a+val(b,s.zc),0)}));
@@ -1346,28 +1314,30 @@ function renderPlanStoreActions(){
     // ---- weekly table ----
     (function(){
       const W=IM.weeks;
-      let h='<table class="tbl"><thead><tr><th>SKU</th><th>Бренд</th><th class="bc">Штрихкод</th>';
-      W.forEach(w=>h+='<th class="num">W'+w+'</th>'); h+='<th class="num">Итого, '+unit+'</th></tr></thead><tbody>';
+      let h='<table class="tbl imtbl"><thead><tr><th>SKU</th><th>Бренд</th><th class="bc">Штрихкод</th>';
+      W.forEach(w=>h+='<th class="num">W'+w+'</th>'); h+='<th class="num">Итого, '+unit+'</th><th class="num">Ср/нед</th></tr></thead><tbody>';
       const tot=W.map((_,i)=>rows.reduce((x,s)=>x+val(s.wk[i]||0,s.zc),0));
-      h+='<tr style="font-weight:700;background:#eef2fb;border-bottom:2px solid #1F3864"><td>ИТОГО ('+rows.length+' SKU)</td><td></td><td></td>';
-      tot.forEach(v=>h+='<td class="num">'+fmt(v)+'</td>'); h+='<td class="num">'+fmt(tot.reduce((a,b)=>a+b,0))+'</td></tr>';
-      rows.slice(0,400).forEach(s=>{h+='<tr'+(s.hl==='A'?' class="hlA"':(s.hl==='B'?' class="hlB"':''))+'><td>'+s.name+'</td><td>'+s.brand.replace(' Professional','')+'</td><td class="bc">'+(s.barcode||'—')+'</td>';
+      h+='<tr class="imtot"><td>ИТОГО ('+rows.length+' SKU)</td><td></td><td></td>';
+      tot.forEach(v=>h+='<td class="num">'+fmt(v)+'</td>'); h+='<td class="num">'+fmt(tot.reduce((a,b)=>a+b,0))+'</td><td class="num"></td></tr>';
+      rows.slice(0,400).forEach(s=>{h+='<tr'+(imIsHL(s)?' class="imhl"':'')+'><td>'+s.name+'</td><td>'+s.brand.replace(' Professional','')+'</td><td class="bc">'+(s.barcode||'—')+'</td>';
         let rt=0; s.wk.forEach(v=>{const x=val(v||0,s.zc);rt+=x;h+='<td class="num">'+(v?fmt(x):'—')+'</td>';});
-        h+='<td class="num"><b>'+fmt(rt)+'</b></td></tr>';});
+        const fi=imFirstNZ(s.wk), denom=fi<0?0:(s.wk.length-fi), avg=denom?Math.round(rt/denom):0;
+        h+='<td class="num"><b>'+fmt(rt)+'</b></td><td class="num">'+(denom?fmt(avg):'—')+'</td></tr>';});
       h+='</tbody></table>';
       document.getElementById('imWkTbl').innerHTML=h;
     })();
     // ---- monthly table ----
     (function(){
       const ML=IM.month_labels, PI=IM.partial_idx;
-      let h='<table class="tbl"><thead><tr><th>SKU</th><th>Бренд</th><th class="bc">Штрихкод</th>';
-      ML.forEach((m,i)=>h+='<th class="num">'+m+(i===PI?'*':'')+'</th>'); h+='<th class="num">Итого, '+unit+'</th></tr></thead><tbody>';
+      let h='<table class="tbl imtbl"><thead><tr><th>SKU</th><th>Бренд</th><th class="bc">Штрихкод</th>';
+      ML.forEach((m,i)=>h+='<th class="num">'+m+(i===PI?'*':'')+'</th>'); h+='<th class="num">Итого, '+unit+'</th><th class="num">Ср/мес</th></tr></thead><tbody>';
       const tot=ML.map((_,i)=>rows.reduce((x,s)=>x+val(s.mo[i]||0,s.zc),0));
-      h+='<tr style="font-weight:700;background:#eef2fb;border-bottom:2px solid #1F3864"><td>ИТОГО ('+rows.length+' SKU)</td><td></td><td></td>';
-      tot.forEach(v=>h+='<td class="num">'+fmt(v)+'</td>'); h+='<td class="num">'+fmt(tot.reduce((a,b)=>a+b,0))+'</td></tr>';
-      rows.slice(0,400).forEach(s=>{h+='<tr'+(s.hl==='A'?' class="hlA"':(s.hl==='B'?' class="hlB"':''))+'><td>'+s.name+'</td><td>'+s.brand.replace(' Professional','')+'</td><td class="bc">'+(s.barcode||'—')+'</td>';
+      h+='<tr class="imtot"><td>ИТОГО ('+rows.length+' SKU)</td><td></td><td></td>';
+      tot.forEach(v=>h+='<td class="num">'+fmt(v)+'</td>'); h+='<td class="num">'+fmt(tot.reduce((a,b)=>a+b,0))+'</td><td class="num"></td></tr>';
+      rows.slice(0,400).forEach(s=>{h+='<tr'+(imIsHL(s)?' class="imhl"':'')+'><td>'+s.name+'</td><td>'+s.brand.replace(' Professional','')+'</td><td class="bc">'+(s.barcode||'—')+'</td>';
         let rt=0; s.mo.forEach(v=>{const x=val(v||0,s.zc);rt+=x;h+='<td class="num">'+(v?fmt(x):'—')+'</td>';});
-        h+='<td class="num"><b>'+fmt(rt)+'</b></td></tr>';});
+        const fi=imFirstNZ(s.mo), denom=fi<0?0:(s.mo.length-fi), avg=denom?Math.round(rt/denom):0;
+        h+='<td class="num"><b>'+fmt(rt)+'</b></td><td class="num">'+(denom?fmt(avg):'—')+'</td></tr>';});
       h+='</tbody></table>';
       if(IM.note)h+='<div class="muted" style="margin-top:6px">'+IM.note+'</div>';
       document.getElementById('imMoTbl').innerHTML=h;
@@ -1395,6 +1365,7 @@ function renderPlanStoreActions(){
     ['imMetric','imSearch'].forEach(id=>document.getElementById(id).addEventListener('input',imRender));
     document.getElementById('imBrand').addEventListener('change',imRender);
     document.getElementById('imMetric').addEventListener('change',imRender);
+    document.getElementById('imHL').addEventListener('change',imRender);
     chHeaderKpis();ovChannel();chSkuFull();cStRender();cStCard();chMonthlySku();drawChannel();drawPurchase();drawPlans();imRender();
   };
 })();
